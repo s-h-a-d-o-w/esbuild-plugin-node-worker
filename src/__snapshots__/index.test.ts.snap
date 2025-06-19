@@ -1,0 +1,65 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`esbuild-plugin-node-worker > CJS works 1`] = `
+""use strict";
+const { Worker } = require("worker_threads");
+new Worker(require("path").join(__dirname, "./worker.cjs"), {
+  workerData: "foo"
+});
+"
+`;
+
+exports[`esbuild-plugin-node-worker > CJS works 2`] = `
+""use strict";
+const path = require("path");
+const { Worker } = require("worker_threads");
+class NestedWorker extends Worker {
+  constructor(path2, options) {
+    super(path2, options);
+  }
+}
+const nestedWorker = new NestedWorker(require("path").join(__dirname, "./nested-worker.cjs"), {
+  workerData: "foo"
+});
+const nestedWorker2 = new Worker(require("path").join(__dirname, "nested-worker.cjs"), {
+  workerData: "foo"
+});
+console.log("Worker says hi");
+"
+`;
+
+exports[`esbuild-plugin-node-worker > CJS works 3`] = `
+""use strict";
+console.log("Nested worker says hi");
+"
+`;
+
+exports[`esbuild-plugin-node-worker > ESM works 1`] = `
+"import { Worker } from "node:worker_threads";
+new Worker(new URL("./worker.mjs", import.meta.url), {
+  workerData: "foo"
+});
+"
+`;
+
+exports[`esbuild-plugin-node-worker > ESM works 2`] = `
+"import { Worker } from "node:worker_threads";
+class NestedWorker extends Worker {
+  constructor(path2, options) {
+    super(path2, options);
+  }
+}
+const nestedWorker = new NestedWorker(new URL("./nested/nested-worker.mjs", import.meta.url), {
+  workerData: "foo"
+});
+const nestedWorker2 = new Worker(new URL("nested/nested-worker.mjs", import.meta.url), {
+  workerData: "foo"
+});
+console.log("Worker says hi");
+"
+`;
+
+exports[`esbuild-plugin-node-worker > ESM works 3`] = `
+"console.log("Nested worker says hi");
+"
+`;

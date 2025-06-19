@@ -1,0 +1,6 @@
+.env
+.eslintcache
+.vscode
+dist
+/node_modules
+__test-output__
