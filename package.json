@@ -1,6 +1,6 @@
 {
   "name": "esbuild-plugin-node-worker",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "MIT",
   "author": "Andreas Opferkuch <andreas.opferkuch@gmail.com>",
   "repository": "s-h-a-d-o-w/esbuild-plugin-node-worker",
