@@ -5,6 +5,8 @@
 
 This esbuild plugin automatically bundles Node.js workers that are used in the source code that you are building.
 
+They are emitted as separate chunks in a `workers` directory, hashed to prevent name collisions.
+
 ## Usage
 
 ```typescript
@@ -22,13 +24,26 @@ The plugin assumes that the **first string literal** that is found in the first 
 
 ```typescript
 // ✅
-new Worker(new URL("./worker.mjs", import.meta.url), /* ... */);
-new Worker(path.join(__dirname, "worker.cjs"), /* ... */);
+// ESM
+new Worker(new URL("./worker.mjs", import.meta.url));
+// CJS
+new Worker(path.join(__dirname, "worker.cjs"));
+// Additional arguments
+new Worker(new URL("./worker.mjs", import.meta.url), {
+  workerData: "foo",
+});
+// Extended workers
+new MyWorker(new URL(".worker.mjs", import.meta.url));
+// Above the entry point or a sibling
+new Worker(new URL("../../whatever/path/worker.mjs", import.meta.url));
 ```
 
 ```typescript
 // ❌
-new Worker(require("path").join(__dirname, "./worker.js"), /* ... */);
-new Worker(new URL(workerPath, import.meta.url), /* ... */);
-new Worker(path.join(__dirname, `workers/${name}.mjs`), /* ... */);
+// First string literal is not the relative path
+new Worker(require("path").join(__dirname, "./worker.js"));
+// No string literal
+new Worker(new URL(workerPath, import.meta.url));
+// Dynamic path
+new Worker(path.join(__dirname, `workers/${name}.mjs`));
 ```

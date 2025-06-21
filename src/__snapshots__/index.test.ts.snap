@@ -3,7 +3,7 @@
 exports[`esbuild-plugin-node-worker > CJS works 1`] = `
 ""use strict";
 const { Worker } = require("worker_threads");
-new Worker(require("path").join(__dirname, "./worker.cjs"), {
+new Worker(require("path").join(__dirname, "workers/worker-W3OA5ZW4.cjs"), {
   workerData: "foo"
 });
 "
@@ -18,10 +18,10 @@ class NestedWorker extends Worker {
     super(path2, options);
   }
 }
-const nestedWorker = new NestedWorker(require("path").join(__dirname, "./nested-worker.cjs"), {
+const nestedWorker = new NestedWorker(require("path").join(__dirname, "workers/nested-worker-KDZIPHJV.cjs"), {
   workerData: "foo"
 });
-const nestedWorker2 = new Worker(require("path").join(__dirname, "nested-worker.cjs"), {
+const nestedWorker2 = new Worker(require("path").join(__dirname, "workers/nested-worker-KDZIPHJV.cjs"), {
   workerData: "foo"
 });
 console.log("Worker says hi");
@@ -36,7 +36,10 @@ console.log("Nested worker says hi");
 
 exports[`esbuild-plugin-node-worker > ESM works 1`] = `
 "import { Worker } from "node:worker_threads";
-new Worker(new URL("./worker.mjs", import.meta.url), {
+new Worker(new URL("workers/worker-VJ7KZKI3.mjs", import.meta.url), {
+  workerData: "foo"
+});
+new Worker(new URL("workers/worker-KR7U4LDZ.mjs", import.meta.url), {
   workerData: "foo"
 });
 "
@@ -49,10 +52,10 @@ class NestedWorker extends Worker {
     super(path2, options);
   }
 }
-const nestedWorker = new NestedWorker(new URL("./nested/nested-worker.mjs", import.meta.url), {
+const nestedWorker = new NestedWorker(new URL("workers/nested-worker-DKYGNA4W.mjs", import.meta.url), {
   workerData: "foo"
 });
-const nestedWorker2 = new Worker(new URL("nested/nested-worker.mjs", import.meta.url), {
+const nestedWorker2 = new Worker(new URL("workers/nested-worker-DKYGNA4W.mjs", import.meta.url), {
   workerData: "foo"
 });
 console.log("Worker says hi");
@@ -60,6 +63,11 @@ console.log("Worker says hi");
 `;
 
 exports[`esbuild-plugin-node-worker > ESM works 3`] = `
+"console.log("Sibling worker says hi");
+"
+`;
+
+exports[`esbuild-plugin-node-worker > ESM works 4`] = `
 "console.log("Nested worker says hi");
 "
 `;
