@@ -2,10 +2,17 @@ import { createHash } from "crypto";
 import type { BuildOptions } from "esbuild";
 import esbuild from "esbuild";
 import { readFile } from "node:fs/promises";
+import path from "path";
 
 import { PLUGIN_NAME } from "./constants.js";
 
-const hashes: Record<string, string> = {};
+const hashes: Record<
+  string,
+  {
+    hash: string;
+    outputPath: string;
+  }
+> = {};
 
 async function hashFile(path: string) {
   return createHash("sha1")
@@ -23,18 +30,30 @@ export async function buildWorker(
   buildOptions: BuildOptions,
   resolvedWorkerPath: string,
   relativeWorkerPath: string,
-) {
+): Promise<string> {
   const sourceHash = await hashFile(resolvedWorkerPath);
-  if (hashes[resolvedWorkerPath] === sourceHash) {
+  if (hashes[resolvedWorkerPath]?.hash === sourceHash) {
     logInfo(
       buildOptions.logLevel,
       `${relativeWorkerPath} has not changed, building skipped`,
     );
-    return;
+    return hashes[resolvedWorkerPath].outputPath;
   }
 
   logInfo(buildOptions.logLevel, `Building ${relativeWorkerPath}`);
-  await esbuild.build(buildOptions);
 
-  hashes[resolvedWorkerPath] = sourceHash;
+  const result = await esbuild.build({
+    ...buildOptions,
+    metafile: true,
+  });
+
+  // Path is relative to cwd
+  const outputPath = path.basename(Object.keys(result.metafile.outputs)[0]!);
+
+  hashes[resolvedWorkerPath] = {
+    hash: sourceHash,
+    outputPath,
+  };
+
+  return outputPath;
 }

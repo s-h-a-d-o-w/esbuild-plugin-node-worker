@@ -6,13 +6,6 @@ import { buildWorker } from "./buildWorker.js";
 import { PLUGIN_NAME } from "./constants.js";
 import { findWorkers } from "./findWorkers.js";
 
-function changeFileExtension(filePath: string, targetExtension: string) {
-  return (
-    filePath.slice(0, filePath.lastIndexOf(path.extname(filePath))) +
-    targetExtension
-  );
-}
-
 function createErrorObject(message: string, error: unknown) {
   return {
     errors: [
@@ -46,8 +39,10 @@ export const nodeWorker: Plugin = {
   async setup(build) {
     const { outfile, outdir, format } = build.initialOptions;
     const isTargetingEsm = await getIsEsm(format);
-    const outputDirectory =
-      outdir || (outfile ? path.dirname(outfile) : "dist");
+    const outputDirectory = path.join(
+      outdir || (outfile ? path.dirname(outfile) : "dist"),
+      "workers",
+    );
     const initialWithoutOutputOptions = {
       ...build.initialOptions,
       outdir: undefined,
@@ -80,26 +75,24 @@ export const nodeWorker: Plugin = {
             relativeWorkerPath,
           );
 
-          const outputPath = changeFileExtension(
-            relativeWorkerPath,
-            isTargetingEsm ? ".mjs" : ".cjs",
-          );
-          transformedSource =
-            transformedSource.slice(0, start) +
-            (isTargetingEsm
-              ? ` new ${workerName}(new URL("${outputPath}", import.meta.url)${sourceTail}`
-              : ` new ${workerName}(require("path").join(__dirname, "${outputPath}")${sourceTail}`) +
-            transformedSource.slice(end);
-
-          await buildWorker(
+          const outputExtension = isTargetingEsm ? ".mjs" : ".cjs";
+          const outputPath = await buildWorker(
             {
               ...initialWithoutOutputOptions,
               entryPoints: [resolvedWorkerPath],
-              outfile: path.join(outputDirectory, outputPath),
+              outdir: outputDirectory,
+              entryNames: "[name]-[hash]",
+              outExtension: { ".js": outputExtension },
             } satisfies BuildOptions,
             resolvedWorkerPath,
             relativeWorkerPath,
           );
+          transformedSource =
+            transformedSource.slice(0, start) +
+            (isTargetingEsm
+              ? ` new ${workerName}(new URL("workers/${outputPath}", import.meta.url)${sourceTail}`
+              : ` new ${workerName}(require("path").join(__dirname, "workers/${outputPath}")${sourceTail}`) +
+            transformedSource.slice(end);
         }
 
         if (transformedSource !== source) {
