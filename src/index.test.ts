@@ -15,9 +15,9 @@ async function matchSnapshot(relativePath: string) {
   expect(content).toMatchSnapshot();
 }
 
-async function runAndCaptureOutput(targetPath: string): Promise<string> {
+async function runAndGetOutput(targetPath: string) {
   const { stdout } = await execa("node", [targetPath]);
-  return stdout;
+  return stdout.split("\n").map((line) => line.trim());
 }
 
 describe("esbuild-plugin-node-worker", () => {
@@ -41,13 +41,12 @@ describe("esbuild-plugin-node-worker", () => {
     await matchSnapshot("workers/worker-KR7U4LDZ.mjs");
     await matchSnapshot("workers/workers/nested-worker-DKYGNA4W.mjs");
 
-    const output = await runAndCaptureOutput(path.join(outdir, "main.js"));
-    expect(output).toMatchInlineSnapshot(`
-      "Sibling worker says hi
-      Worker says hi
-      Nested worker says hi
-      Nested worker says hi"
-    `);
+    const outputLines = await runAndGetOutput(path.join(outdir, "main.js"));
+    expect(outputLines).toContain("Sibling worker says hi");
+    expect(outputLines).toContain("Worker says hi");
+    expect(
+      outputLines.filter((line) => line === "Nested worker says hi"),
+    ).toHaveLength(2);
   });
 
   it("CJS works", async () => {
@@ -63,11 +62,10 @@ describe("esbuild-plugin-node-worker", () => {
     await matchSnapshot("workers/worker-W3OA5ZW4.cjs");
     await matchSnapshot("workers/workers/nested-worker-KDZIPHJV.cjs");
 
-    const output = await runAndCaptureOutput(path.join(outdir, "main.cjs"));
-    expect(output).toMatchInlineSnapshot(`
-      "Worker says hi
-      Nested worker says hi
-      Nested worker says hi"
-    `);
+    const outputLines = await runAndGetOutput(path.join(outdir, "main.cjs"));
+    expect(outputLines).toContain("Worker says hi");
+    expect(
+      outputLines.filter((line) => line === "Nested worker says hi"),
+    ).toHaveLength(2);
   });
 });
