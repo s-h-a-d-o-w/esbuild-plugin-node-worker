@@ -4,7 +4,7 @@
 # esbuild-plugin-node-worker
 
 > [!WARNING]  
-> Make sure that you've considered simply using multiple entry points (and if using Typescript - replacing the file extension of the relative path you're using in the worker constructor with `esbuild-plugin-replace`) before using this plugin.
+> **Make sure that you've considered simply using multiple entry points (and if using Typescript - replacing the file extension of the relative path you're using in the worker constructor with `esbuild-plugin-replace`) before using this plugin.**
 
 This esbuild plugin automatically bundles Node.js workers that are used in the source code that you are building.
 
