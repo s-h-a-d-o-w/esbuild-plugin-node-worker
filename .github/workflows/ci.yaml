@@ -4,13 +4,15 @@ on:
     branches: [main, master]
     tags: ['*']
 
+env:
+  LATEST_NODE_VERSION: 22
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version:
-          - 18
           - 20
           - 22
     steps:
@@ -23,10 +25,10 @@ jobs:
       - run: |
           pnpm install
           npx --yes concurrently "pnpm lint" "pnpm test:attw" "pnpm test" "pnpm typecheck"
-      - if: startsWith(github.ref, 'refs/tags/') && matrix.node-version == 22
+      - if: startsWith(github.ref, 'refs/tags/') && matrix.node-version == env.LATEST_NODE_VERSION
         run: npm pack
       - name: Upload package artifact
-        if: startsWith(github.ref, 'refs/tags/') && matrix.node-version == 22
+        if: startsWith(github.ref, 'refs/tags/') && matrix.node-version == env.LATEST_NODE_VERSION
         uses: actions/upload-artifact@v4
         with:
           name: package
@@ -42,7 +44,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.LATEST_NODE_VERSION }}
           registry-url: https://registry.npmjs.org
       - uses: actions/download-artifact@v4
         with: { name: package }
